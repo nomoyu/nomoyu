@@ -1,9 +1,9 @@
 package {{ .Context }}
 
-import {
+import (
     "errors"
     dom "{{ .Module }}/internal/domain/{{ .Context }}"
-}
+)
 
 type service struct {
 	repo dom.Repository
