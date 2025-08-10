@@ -1,0 +1,8 @@
+package {{ .Context }}
+
+type Repository interface {
+	Save(*{{ .ContextP }}) error
+	FindByID(id uint64) (*{{ .ContextP }}, error)
+	Update(*{{ .ContextP }}) error
+    Delete(id uint64) error
+}

@@ -1,0 +1,12 @@
+package http
+
+import (
+	"github.com/nomoyu/go-gin-framework/nomoyu"
+	"{{ .Module }}/internal/interfaces/http/ping"
+)
+
+func AllRoutes() []nomoyu.RouteGroup {
+	return []nomoyu.RouteGroup{
+		ping.Routes(),
+	}
+}

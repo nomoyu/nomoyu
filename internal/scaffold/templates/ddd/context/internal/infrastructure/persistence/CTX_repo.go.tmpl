@@ -1,0 +1,47 @@
+package persistence
+
+import (
+	"github.com/nomoyu/go-gin-framework/pkg/db"
+	dom "{{ .Module }}/internal/domain/{{ .Context }}"
+)
+
+type {{ .ContextP }}Model struct {
+	ID   uint64 `gorm:"primaryKey;autoIncrement"`
+	Name string
+	db.Model
+}
+
+func to{{ .ContextP }}Model(e *dom.{{ .ContextP }}) *{{ .ContextP }}Model {
+	return &{{ .ContextP }}Model{ID: e.ID, Name: e.Name}
+}
+func to{{ .ContextP }}Entity(m *{{ .ContextP }}Model) *dom.{{ .ContextP }} {
+	return &dom.{{ .ContextP }}{ID: m.ID, Name: m.Name}
+}
+
+type {{ .ContextP }}GormRepo struct{}
+
+func New{{ .ContextP }}GormRepo() *{{ .ContextP }}GormRepo { return &{{ .ContextP }}GormRepo{} }
+
+func (r *{{ .ContextP }}GormRepo) Save(e *dom.{{ .ContextP }}) error {
+	return db.DB().Save(to{{ .ContextP }}Model(e)).Error
+}
+func (r *{{ .ContextP }}GormRepo) FindByID(id uint64) (*dom.{{ .ContextP }}, error) {
+	var m {{ .ContextP }}Model
+	if err := db.DB().First(&m, id).Error; err != nil { return nil, err }
+	return to{{ .ContextP }}Entity(&m), nil
+}
+
+// Update 仅更新允许的字段，避免 Save 覆盖零值
+func (r *{{ .ContextP }}GormRepo) Update(e *dom.{{ .ContextP }}) error {
+	return db.DB().
+		Model(&{{ .ContextP }}Model{}).
+		Where("id = ?", e.ID).
+		Updates(map[string]any{
+			"name": e.Name,
+		}).Error
+}
+
+// Delete 软删除（依赖 gorm.DeletedAt）
+func (r *{{ .ContextP }}GormRepo) Delete(id uint64) error {
+	return db.DB().Delete(&{{ .ContextP }}Model{}, id).Error
+}

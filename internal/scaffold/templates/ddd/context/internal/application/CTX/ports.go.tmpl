@@ -1,0 +1,10 @@
+package {{ .Context }}
+
+import dom "{{ .Module }}/internal/domain/{{ .Context }}"
+
+type Service interface {
+	Create(name string) (*dom.{{ .ContextP }}, error)
+	Get(id uint64) (*dom.{{ .ContextP }}, error)
+	Update(id uint64, name string) (*dom.{{ .ContextP }}, error)
+    Delete(id uint64) error
+}

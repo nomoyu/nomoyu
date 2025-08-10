@@ -1,0 +1,28 @@
+server:
+  port: 3303
+
+log:
+  path: "./logs"
+  level: "info"
+
+swagger:
+  enabled: true
+  route: "/swagger/*any"
+
+auth:
+  enabled: false
+  mode: jwt
+  jwt:
+    secret: "change-me"
+
+database:
+  dialect: "mysql"        # mysql / postgres / sqlite
+  host: "127.0.0.1"
+  port: 3306
+  user: "root"
+  password: ""
+  dbname: "nomoyu_go" # 库名不存在时会自动建库
+
+config:
+  remote:
+    addr: ""          # 配置中心地址（留空则关闭）

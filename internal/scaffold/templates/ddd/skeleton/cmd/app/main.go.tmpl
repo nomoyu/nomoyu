@@ -1,0 +1,22 @@
+// @title           Nomoyu 示例接口文档
+// @version         1.0
+// @description     这是 nomoyu 自动生成的 Swagger 文档
+// @host            localhost:3303
+// @BasePath        /
+
+package main
+
+import (
+	"github.com/nomoyu/go-gin-framework/nomoyu"
+	"github.com/nomoyu/go-gin-framework/pkg/logger"
+	"{{ .Module }}/internal/interfaces/http"
+	_ "{{ .Module }}/internal/boot"
+)
+
+func main() {
+	app := nomoyu.Start().
+		WithRoute(http.AllRoutes()...)
+
+	logger.Info("✅ 启动服务前日志测试成功")
+	app.Run()
+}

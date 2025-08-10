@@ -1,0 +1,44 @@
+package {{ .Context }}
+
+import {
+    "errors"
+    dom "{{ .Module }}/internal/domain/{{ .Context }}"
+}
+
+type service struct {
+	repo dom.Repository
+}
+
+func New(repo dom.Repository) Service {
+	return &service{repo: repo}
+}
+
+func (s *service) Create(name string) (*dom.{{ .ContextP }}, error) {
+	e, err := dom.New{{ .ContextP }}(name)
+	if err != nil { return nil, err }
+	if err := s.repo.Save(e); err != nil { return nil, err }
+	return e,err
+}
+
+func (s *service) Get(id uint64) (*dom.{{ .ContextP }}, error) {
+	return s.repo.FindByID(id)
+}
+
+func (s *service) Update(id uint64, name string) (*dom.{{ .ContextP }}, error) {
+	if name == "" {
+		return nil, errors.New("name cannot be empty")
+	}
+	e, err := s.repo.FindByID(id)
+	if err != nil {
+		return nil, err
+	}
+	e.Name = name
+	if err := s.repo.Update(e); err != nil {
+		return nil, err
+	}
+	return e, nil
+}
+
+func (s *service) Delete(id uint64) error {
+	return s.repo.Delete(id)
+}

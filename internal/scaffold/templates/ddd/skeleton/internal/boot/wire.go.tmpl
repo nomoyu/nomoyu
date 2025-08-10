@@ -1,0 +1,21 @@
+package boot
+
+import (
+	"fmt"
+)
+
+// "github.com/nomoyu/shopgo/internal/infrastructure/persistence"
+//
+//		"github.com/nomoyu/shopgo/internal/application/user"
+//	   "github.com/nomoyu/shopgo/internal/infrastructure/persistence"
+func init() {
+	// 示例：这里做统一的 AutoMigrate
+	fmt.Printf("boot init...")
+	// 这里是自己封装的一层数据迁移，当配置autoMigrate为true时，可以使用下面的语句进行数据迁移
+	// db.RegisterModel(&persistence.UserModel{})
+	// 业务对象的注册
+	// servicefactory.Register("userService", func() any {
+	//	repo := persistence.NewUserGormRepo()
+	//	return user.New(repo)
+	//})
+}
