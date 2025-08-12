@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"path"
 	"path/filepath"
 	"strings"
 	"text/template"
@@ -168,43 +169,53 @@ func runGoModTidy(dir string) error {
 }
 
 func copyDDDTplDir(src, dest string, data tmplData) error {
+	// 🔴 src 是 embed 路径，必须是 / 分隔
 	entries, err := dddFS.ReadDir(src)
 	if err != nil {
 		return err
 	}
 	for _, e := range entries {
-		from := filepath.Join(src, e.Name())
-		to := filepath.Join(dest, e.Name())
+		// 👉 fromEmbed：用于 embed 读取（用 path.Join）
+		fromEmbed := path.Join(src, e.Name())
 
-		// 处理占位目录名：CTX -> 实际上下文名
-		to = strings.ReplaceAll(to, "CTX", data.Context)
+		// 👉 toDisk：用于写入磁盘（用 filepath.Join）
+		toDisk := filepath.Join(dest, e.Name())
+
+		// 处理占位目录名：CTX -> 实际上下文名（仅影响磁盘目标路径）
+		toDisk = strings.ReplaceAll(toDisk, "CTX", data.Context)
 
 		if e.IsDir() {
-			if err := os.MkdirAll(to, 0755); err != nil {
+			if err := os.MkdirAll(toDisk, 0755); err != nil {
 				return err
 			}
-			if err := copyDDDTplDir(from, to, data); err != nil {
+			// 递归时：embed 继续传 fromEmbed，磁盘继续传 toDisk
+			if err := copyDDDTplDir(fromEmbed, toDisk, data); err != nil {
 				return err
 			}
 			continue
 		}
 
-		// 文件：.tmpl 需要渲染；普通文件原样拷贝
-		b, err := dddFS.ReadFile(from)
+		// 读取模板文件（embed 路径！）
+		b, err := dddFS.ReadFile(fromEmbed)
 		if err != nil {
 			return err
 		}
-		if strings.HasSuffix(from, ".tmpl") {
-			// 渲染
-			t, err := template.New(filepath.Base(from)).Funcs(template.FuncMap{
+
+		if strings.HasSuffix(fromEmbed, ".tmpl") {
+			// 渲染模板文件
+			t, err := template.New(filepath.Base(fromEmbed)).Funcs(template.FuncMap{
 				"Pascal": pascalCase,
 			}).Parse(string(b))
 			if err != nil {
 				return err
 			}
-			// 去掉 .tmpl
-			to = strings.TrimSuffix(to, ".tmpl")
-			f, err := os.Create(to)
+			// 去掉目标文件的 .tmpl 后缀
+			toDisk = strings.TrimSuffix(toDisk, ".tmpl")
+
+			if err := os.MkdirAll(filepath.Dir(toDisk), 0755); err != nil {
+				return err
+			}
+			f, err := os.Create(toDisk)
 			if err != nil {
 				return err
 			}
@@ -214,7 +225,11 @@ func copyDDDTplDir(src, dest string, data tmplData) error {
 			}
 			f.Close()
 		} else {
-			if err := os.WriteFile(to, b, 0644); err != nil {
+			// 直接写入普通文件
+			if err := os.MkdirAll(filepath.Dir(toDisk), 0755); err != nil {
+				return err
+			}
+			if err := os.WriteFile(toDisk, b, 0644); err != nil {
 				return err
 			}
 		}
